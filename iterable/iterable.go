@@ -17,7 +17,7 @@ func (iter Iterable) Next() (interface{}, error) {
 
 }
 
-func New(any interface{}) (Iterable, error) {
+func New(any interface{}) Iterable {
 	switch any := any.(type) {
 	case []interface{}:
 		data := make(chan interface{}, len(any))
@@ -27,16 +27,16 @@ func New(any interface{}) (Iterable, error) {
 			}
 			close(data)
 		}()
-		return Iterable(data), nil
+		return Iterable(data)
 	case chan interface{}:
-		return Iterable(any), nil
+		return Iterable(any)
 
 	default:
 		data := make(chan interface{}, 1)
 		go func() {
 			data <- any
 		}()
-		return Iterable(data), nil
+		return Iterable(data)
 
 	}
 }

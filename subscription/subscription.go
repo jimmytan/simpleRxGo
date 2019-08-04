@@ -11,3 +11,11 @@ type Subscription struct {
 func (sub Subscription) Subscribe() {
 	sub.SubscriptAt = time.Now()
 }
+
+func (sub Subscription) UnSubscribe() {
+	sub.UnSubscriptAt = time.Now()
+}
+
+func New() Subscription {
+	return Subscription{}
+}

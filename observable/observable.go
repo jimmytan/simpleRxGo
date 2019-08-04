@@ -8,7 +8,7 @@ import (
 
 type Observable <-chan interface{}
 
-func From(iterable iterable.Iterable) (Observable, error) {
+func From(iterable iterable.Iterable) Observable {
 	source := make(chan interface{})
 
 	go func() {
@@ -23,10 +23,33 @@ func From(iterable iterable.Iterable) (Observable, error) {
 		close(source)
 	}()
 
-	return Observable(source), nil
+	return Observable(source)
 
 }
 
 func (observable Observable) Subscribe(observer observer.Observer) <-chan subscription.Subscription {
+	done := make(chan subscription.Subscription)
+	sub := subscription.New()
+	sub.Subscribe()
+	go func() {
+		for item := range observable {
+			switch item := item.(type) {
+			case error:
+				observer.OnError(item)
+				sub.Error = item
+				sub.UnSubscribe()
+				break
 
+			default:
+				observer.OnNext(item)
+			}
+		}
+		if sub.Error == nil {
+			observer.OnDone()
+		}
+
+		done <- sub
+	}()
+
+	return done
 }
